@@ -12,6 +12,6 @@ public interface Command {
      * Исполняет команду
      * @param args От 0 до N аргументов
      */
-    public String execute(String... args) throws ErrorInFunctionException;
+    public String execute(String... args);
     public default void setExtraArgument(Flat flat) {};
 }

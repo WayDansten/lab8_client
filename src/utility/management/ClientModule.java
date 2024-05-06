@@ -18,9 +18,6 @@ public class ClientModule {
     public void launch() throws IOException{
         int port = 5678;
         socket = new Socket("localhost", port);
-        oos = new ObjectOutputStream(socket.getOutputStream());
-        ois = new ObjectInputStream(socket.getInputStream());
-        receiveAndExecuteRequest();
         while (true) {
             try {
                 if (inputManager.getInScriptState() && !inputManager.getReceiver().hasNext()) {
@@ -32,7 +29,13 @@ public class ClientModule {
                     closeConnection();
                     break;
                 } else {
-                    Request newRequest = requestManager.selectRequest(data[0], data[1]);
+                    Request newRequest;
+                    try {
+                        if (data.length > 1) {
+                            newRequest = requestManager.selectRequest(data[0], data[1]);
+                        } else {
+                            newRequest = requestManager.selectRequest(data[0], "");
+                        }
                     if (newRequest.extract()[0].equals("execute_script")) {
                         try {
                             if (!inputManager.getOpenedScripts().contains(data[1])) {
@@ -50,6 +53,9 @@ public class ClientModule {
                     }
                     sendRequest(newRequest);
                     receiveAndExecuteRequest();
+                    } catch (ClassNotFoundException e) {
+                        System.err.println(e.getMessage());
+                    }
                 }
             } catch (IOException e) {
                 System.err.println("Соединение не найдено!");
@@ -72,6 +78,8 @@ public class ClientModule {
     }
     public void receiveAndExecuteRequest() throws IOException {
         try {
+            oos = new ObjectOutputStream(socket.getOutputStream());
+            ois = new ObjectInputStream(socket.getInputStream());
             Request request = (Request) ois.readObject();
             System.out.println(Arrays.toString(request.extract()));
         } catch (ClassNotFoundException e) {
@@ -79,6 +87,7 @@ public class ClientModule {
         }
     }
     public void sendRequest(Request request) throws IOException{
+        oos = new ObjectOutputStream(socket.getOutputStream());
         oos.writeObject(request);
     }
 }

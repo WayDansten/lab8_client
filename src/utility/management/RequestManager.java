@@ -35,7 +35,7 @@ public class RequestManager {
         noninteractiveCommandKeys.add("count_greater_than_house");
         noninteractiveCommandKeys.add("execute_script");
     }
-    public Request selectRequest(String... arguments) throws ErrorInFunctionException {
+    public Request selectRequest(String... arguments) throws ClassNotFoundException, ErrorInFunctionException {
         if (interactiveCommandKeys.contains(arguments[0].toLowerCase())) {
             RequestWithFlatCreation newRequest = new RequestWithFlatCreation(arguments[0].toLowerCase(), arguments[1]);
             newRequest.addExtraArgument();
@@ -43,8 +43,7 @@ public class RequestManager {
         } else if (noninteractiveCommandKeys.contains(arguments[0].toLowerCase())) {
             return new RequestForData(arguments[0].toLowerCase(), arguments[1]);
         } else {
-            System.err.println("Команда не найдена!");
-            return null;
+            throw new ClassNotFoundException("Команда не найдена!");
         }
     }
 }
