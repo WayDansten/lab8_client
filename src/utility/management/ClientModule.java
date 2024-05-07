@@ -16,10 +16,14 @@ public class ClientModule {
     private ObjectOutputStream oos;
     private ObjectInputStream ois;
     private Socket socket;
-    public void launch() throws IOException{
+    public void launch(){
         while (true) {
-            int port = 5678;
-            socket = new Socket("localhost", port);
+            try {
+                int port = 5678;
+                socket = new Socket("localhost", port);
+            } catch (IOException e) {
+                System.err.println("Сервер временно недоступен");
+            }
             try {
                 if (inputManager.getInScriptState() && !inputManager.getReceiver().hasNext()) {
                     inputManager.setPreviousMode();
@@ -59,8 +63,7 @@ public class ClientModule {
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
-                System.err.println("Соединение не найдено!");
+                System.err.println("Соединение не найдено или сервер временно недоступен");
             } catch (NoSuchElementException e) {
                 System.out.println("Завершение работы программы...");
                 closeConnection();
