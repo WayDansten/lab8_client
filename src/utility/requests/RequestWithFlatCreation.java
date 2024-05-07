@@ -8,7 +8,7 @@ import utility.management.InputManager;
 public class RequestWithFlatCreation extends Request {
     private final String commandKey;
     private final String argument;
-    Flat extraArgument;
+    private Flat extraArgument;
     public RequestWithFlatCreation(String commandKey, String argument) {
         this.argument = argument;
         this.commandKey = commandKey;
@@ -19,5 +19,8 @@ public class RequestWithFlatCreation extends Request {
     @Override
     public String[] extract(){
         return new String[]{commandKey, argument};
+    }
+    public Flat getExtraArgument() {
+        return extraArgument;
     }
 }

@@ -6,6 +6,7 @@ import utility.requests.Request;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 
@@ -16,14 +17,14 @@ public class ClientModule {
     private ObjectInputStream ois;
     private Socket socket;
     public void launch() throws IOException{
-        int port = 5678;
-        socket = new Socket("localhost", port);
         while (true) {
+            int port = 5678;
+            socket = new Socket("localhost", port);
             try {
                 if (inputManager.getInScriptState() && !inputManager.getReceiver().hasNext()) {
                     inputManager.setPreviousMode();
                 }
-                String[] data = inputManager.getReceiver().next().split(" ");
+                String[] data = inputManager.getReceiver().nextLine().split(" ");
                 if (data[0].equalsIgnoreCase("exit")) {
                     System.out.println("Завершение работы программы...");
                     closeConnection();
@@ -32,7 +33,7 @@ public class ClientModule {
                     Request newRequest;
                     try {
                         if (data.length > 1) {
-                            newRequest = requestManager.selectRequest(data[0], data[1]);
+                            newRequest = requestManager.selectRequest(data);
                         } else {
                             newRequest = requestManager.selectRequest(data[0], "");
                         }
@@ -58,6 +59,7 @@ public class ClientModule {
                     }
                 }
             } catch (IOException e) {
+                e.printStackTrace();
                 System.err.println("Соединение не найдено!");
             } catch (NoSuchElementException e) {
                 System.out.println("Завершение работы программы...");
@@ -79,6 +81,7 @@ public class ClientModule {
     public void receiveAndExecuteRequest() throws IOException {
         try {
             oos = new ObjectOutputStream(socket.getOutputStream());
+            oos.flush();
             ois = new ObjectInputStream(socket.getInputStream());
             Request request = (Request) ois.readObject();
             System.out.println(Arrays.toString(request.extract()));
@@ -87,7 +90,10 @@ public class ClientModule {
         }
     }
     public void sendRequest(Request request) throws IOException{
-        oos = new ObjectOutputStream(socket.getOutputStream());
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        oos = new ObjectOutputStream(out);
         oos.writeObject(request);
+        oos.flush();
+        socket.getOutputStream().write(out.toByteArray());
     }
 }
