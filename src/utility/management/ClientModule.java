@@ -22,7 +22,8 @@ public class ClientModule {
                 int port = 5678;
                 socket = new Socket("localhost", port);
             } catch (IOException e) {
-                System.err.println("Сервер временно недоступен");
+                System.err.println("Сервер временно недоступен. Пожалуйста, повторите попытку позже");
+                break;
             }
             try {
                 if (inputManager.getInScriptState() && !inputManager.getReceiver().hasNext()) {
