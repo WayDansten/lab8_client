@@ -1,18 +1,24 @@
 package utility.management;
 
 import exceptions.ErrorInFunctionException;
+import utility.auxiliary.UserData;
+import utility.requests.AuthorizationRequest;
+import utility.requests.MessageRequest;
 import utility.requests.Request;
 
 import java.io.*;
-import java.net.InetAddress;
+import java.math.BigInteger;
 import java.net.Socket;
-import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 
 public class ClientModule {
     private final InputManager inputManager = InputManager.getInstance();
     private final RequestManager requestManager = RequestManager.getInstance();
+    private UserData userData;
     private ObjectOutputStream oos;
     private ObjectInputStream ois;
     private Socket socket;
@@ -29,6 +35,38 @@ public class ClientModule {
                 if (inputManager.getInScriptState() && !inputManager.getReceiver().hasNext()) {
                     inputManager.setPreviousMode();
                 }
+                if (userData == null) {
+                    boolean authorizationSuccessful = false;
+                    while (!authorizationSuccessful) {
+                        boolean registrationFlag;
+                        while (true) {
+                            System.out.println("Необходима авторизация. Введите '1' для регистрации или любое другое число для входа в систему:");
+                            try {
+                                registrationFlag = Integer.parseInt(inputManager.getReceiver().nextLine().strip()) == 1;
+                                break;
+                            } catch (NumberFormatException e) {
+                                System.err.println("Самый умный?");
+                            }
+                        }
+                        System.out.println("Введите логин:");
+                        String login = inputManager.getReceiver().nextLine();
+                        System.out.println("Введите пароль:");
+                        String password = inputManager.getReceiver().nextLine();
+                        MessageDigest md;
+                        try {
+                            md = MessageDigest.getInstance("SHA-224");
+                            String pepper = "e>1H:x0@Zm";
+                            byte[] hash = md.digest((password + pepper).getBytes(StandardCharsets.UTF_8));
+                            String hashedPassword = String.format("%032x", new BigInteger(1, hash));
+                            AuthorizationRequest authRequest = new AuthorizationRequest(login, hashedPassword, registrationFlag);
+                            userData = authRequest.getUserData();
+                            sendRequest(authRequest);
+                            authorizationSuccessful = checkAuthorization();
+                        } catch (NoSuchAlgorithmException e) {
+                            System.out.println("Несуществующий алгоритм хеширования");
+                        }
+                    }
+                }
                 String[] data = inputManager.getReceiver().nextLine().split(" ");
                 if (data[0].equalsIgnoreCase("exit")) {
                     System.out.println("Завершение работы программы...");
@@ -38,9 +76,9 @@ public class ClientModule {
                     Request newRequest;
                     try {
                         if (data.length > 1) {
-                            newRequest = requestManager.selectRequest(data);
+                            newRequest = requestManager.selectRequest(data[0], data[1], userData.login(), userData.password());
                         } else {
-                            newRequest = requestManager.selectRequest(data[0], "");
+                            newRequest = requestManager.selectRequest(data[0], "", userData.login(), userData.password());
                         }
                     if (newRequest.extract()[0].equals("execute_script")) {
                         try {
@@ -65,6 +103,7 @@ public class ClientModule {
                 }
             } catch (IOException e) {
                 System.err.println("Соединение не найдено или сервер временно недоступен");
+                e.printStackTrace();
             } catch (NoSuchElementException e) {
                 System.out.println("Завершение работы программы...");
                 closeConnection();
@@ -91,6 +130,23 @@ public class ClientModule {
             System.out.println(Arrays.toString(request.extract()));
         } catch (ClassNotFoundException e) {
             System.err.println("Класс не найден!");
+        }
+    }
+    public boolean checkAuthorization() throws IOException{
+        try {
+            oos = new ObjectOutputStream(socket.getOutputStream());
+            oos.flush();
+            ois = new ObjectInputStream(socket.getInputStream());
+            MessageRequest request = (MessageRequest) ois.readObject();
+            if (request.extract()[0].contains("Авторизация успешна!")) {
+                System.out.println(request.extract()[0]);
+                return true;
+            }
+            System.out.println(request.extract()[0]);
+            return false;
+        } catch (ClassNotFoundException e) {
+            System.err.println("Класс не найден!");
+            return false;
         }
     }
     public void sendRequest(Request request) throws IOException{

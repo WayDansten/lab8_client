@@ -1,6 +1,7 @@
 package utility.management;
 
 import exceptions.ErrorInFunctionException;
+import utility.auxiliary.UserData;
 import utility.requests.Request;
 import utility.requests.RequestForData;
 import utility.requests.RequestWithFlatCreation;
@@ -37,11 +38,11 @@ public class RequestManager {
     }
     public Request selectRequest(String... arguments) throws ClassNotFoundException, ErrorInFunctionException {
         if (interactiveCommandKeys.contains(arguments[0].toLowerCase())) {
-            RequestWithFlatCreation newRequest = new RequestWithFlatCreation(arguments[0].toLowerCase(), arguments[1]);
+            RequestWithFlatCreation newRequest = new RequestWithFlatCreation(arguments[0].toLowerCase(), arguments[1], new UserData(arguments[2], arguments[3]));
             newRequest.addExtraArgument();
             return newRequest;
         } else if (noninteractiveCommandKeys.contains(arguments[0].toLowerCase())) {
-            return new RequestForData(arguments[0].toLowerCase(), arguments[1]);
+            return new RequestForData(arguments[0].toLowerCase(), arguments[1], new UserData(arguments[2], arguments[3]));
         } else {
             throw new ClassNotFoundException("Команда не найдена!");
         }
