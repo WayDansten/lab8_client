@@ -103,7 +103,6 @@ public class ClientModule {
                 }
             } catch (IOException e) {
                 System.err.println("Соединение не найдено или сервер временно недоступен");
-                e.printStackTrace();
             } catch (NoSuchElementException e) {
                 System.out.println("Завершение работы программы...");
                 closeConnection();
