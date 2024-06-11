@@ -1,8 +1,10 @@
-import utility.management.ClientModule;
+import utility.graphics.AuthorizationWindow;
+import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
-        ClientModule clientModule = new ClientModule();
-        clientModule.launch();
+        JFrame frame = new JFrame();
+        AuthorizationWindow authorizationWindow = new AuthorizationWindow();
+        authorizationWindow.display(frame);
     }
 }

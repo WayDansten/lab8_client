@@ -14,11 +14,10 @@ import static java.lang.Integer.parseInt;
  */
 
 public class CoordinatesBuilder extends Builder<Coordinates> {
-    private final InputManager inputManager;
-    private final Scanner receiver;
+    InputManager inputManager;
+    private final Scanner receiver = new Scanner(System.in);
     public CoordinatesBuilder(InputManager inputManager) {
         this.inputManager = inputManager;
-        this.receiver = inputManager.getReceiver();
     }
 
     /**

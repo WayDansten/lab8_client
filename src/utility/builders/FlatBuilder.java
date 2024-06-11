@@ -20,10 +20,9 @@ import static java.lang.Integer.parseInt;
 
 public class FlatBuilder extends Builder<Flat> {
     private final InputManager inputManager;
-    private final Scanner receiver;
+    private final Scanner receiver = new Scanner(System.in);
     public FlatBuilder(InputManager inputManager) {
         this.inputManager = inputManager;
-        this.receiver = inputManager.getReceiver();
     }
     /**
      * Собирает новый экземпляр класса Flat

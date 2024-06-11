@@ -16,10 +16,9 @@ import static java.lang.Long.parseLong;
 
 public class HouseBuilder extends Builder<House> {
     private InputManager inputManager;
-    private final Scanner receiver;
+    private final Scanner receiver = new Scanner(System.in);
     public HouseBuilder(InputManager inputManager) {
         this.inputManager = inputManager;
-        this.receiver = inputManager.getReceiver();
     }
     /**
      * Собирает новый экземпляр класса House

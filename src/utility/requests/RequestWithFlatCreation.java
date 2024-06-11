@@ -1,10 +1,7 @@
 package utility.requests;
 
-import exceptions.ErrorInFunctionException;
 import stored_classes.Flat;
 import utility.auxiliary.UserData;
-import utility.builders.FlatBuilder;
-import utility.management.InputManager;
 
 public class RequestWithFlatCreation extends Request {
     private final String commandKey;
@@ -15,8 +12,8 @@ public class RequestWithFlatCreation extends Request {
         this.commandKey = commandKey;
         this.userData = userData;
     }
-    public void addExtraArgument() throws ErrorInFunctionException {
-       extraArgument = new FlatBuilder(InputManager.getInstance()).build();
+    public void addExtraArgument(Flat flat){
+       extraArgument = flat;
     }
     @Override
     public String[] extract(){
